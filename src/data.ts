@@ -172,4 +172,48 @@ export const labs = [
 export const contact = {
   eyebrow: "Ready for deployment?",
   title: "DEPLOY_A_MESSAGE",
+  connectionTitle: "Connection_Parameters",
+  connectionParameters: [
+    { label: "SERVER_STATUS:", value: "READY", status: true },
+    { label: "ENCRYPTION:", value: "AES-256_GCM" },
+    { label: "HANDSHAKE:", value: "SUCCESSFUL" },
+    { label: "PROTOCOL:", value: "SECURE_TRANS_V2" },
+    { label: "IP_ORIGIN:", value: "***.***.11.02" },
+  ],
+  terminalStatus: [
+    "init message_buffer...",
+    "checking packet integrity...",
+    "waiting for user input_",
+  ],
+  fields: [
+    {
+      id: "identity",
+      label: "Input: USER_IDENTITY",
+      icon: "account_circle",
+      placeholder: "NAME_HERE",
+      type: "text",
+    },
+    {
+      id: "callback",
+      label: "Input: CALLBACK_ADDR",
+      icon: "mail",
+      placeholder: "EMAIL_OR_HANDLE",
+      type: "email",
+    },
+  ],
+  message: {
+    id: "payload",
+    label: "Input: PAYLOAD_BODY",
+    icon: "description",
+    placeholder: "SYSTEM_REQUEST_DETAILS...",
+  },
+  submitLabel: "BROADCAST_TRANSMISSION",
+  footer: {
+    copyright: "© 2024 Pawan Kumar",
+    build: "Build: 0x9f2a71 | Runtime: 99.9% Uptime",
+    links: ["Github", "LinkedIn", "Terminal_Log"],
+    timezone: "TIMEZONE_UTC_0",
+    status: "BUILD_STABLE",
+  },
+  scrollHint: "Scroll to explore.sys",
 };
