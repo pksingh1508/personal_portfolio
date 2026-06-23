@@ -24,13 +24,38 @@ export const hero = {
     "I'm Pawan Kumar, a Full Stack Web & Mobile Developer focused on React, Next.js, React Native, Laravel, Node.js, Supabase, PostgreSQL, and modern product engineering.",
   terminalTitle: "// INIT_SEQUENCE",
   codeLines: [
-    "const system = new Developer({",
-    "  name: 'Pawan Kumar',",
-    "  role: 'Full Stack Engineer',",
-    "  status: 'Ready to build'",
-    "});",
-    "",
-    "system.init();",
+    [
+      { text: "const ", tone: "keyword" },
+      { text: "system", tone: "identifier" },
+      { text: " = new " },
+      { text: "Developer", tone: "function" },
+      { text: "({" },
+    ],
+    [
+      { text: "  name", tone: "property" },
+      { text: ": " },
+      { text: "'Pawan Kumar'", tone: "string" },
+      { text: "," },
+    ],
+    [
+      { text: "  role", tone: "property" },
+      { text: ": " },
+      { text: "'Full Stack Engineer'", tone: "string" },
+      { text: "," },
+    ],
+    [
+      { text: "  status", tone: "property" },
+      { text: ": " },
+      { text: "'Ready to build'", tone: "string" },
+    ],
+    [{ text: "});", tone: "keyword" }],
+    [],
+    [
+      { text: "system", tone: "identifier" },
+      { text: "." },
+      { text: "init", tone: "function" },
+      { text: "();" },
+    ],
   ],
   actions: [
     { label: "VIEW PROJECTS", href: "#builds", variant: "primary" },
@@ -299,8 +324,8 @@ export const logs = {
 export const profile = {
   header: "/ SYS_DIR / IDENTITY_MANIFEST",
   avatar: {
-    src: "https://lh3.googleusercontent.com/aida-public/AB6AXuAxIIOSJ48rUxYs94rIjupPg7_ew7wr6aqxAItANKc8b4BT95MSOEd6vpY1BVJ0rC5whWtK6u6wXXvZPQqCEjCU0_4slDqizqhyVohJAK8u6A4ovtDXMHXW-lhPDW8Fbydit9UxoombpMAKRROs82f51tKVH0UpsB1OwYWQoMh1thM_-6bxGEIRoNvYxx0YTcqYnj_kfNYo7Sx8qimisyFyZR4UVV_DEWIxwPcfVPHbdl_qd5y2ktgMY8K344ffcsN6jE4FkEdGBkk",
-    alt: "Futuristic holographic portrait of a full-stack developer in a cyber terminal interface.",
+    src: "/myimage.png",
+    alt: "Portrait of Pawan Kumar.",
   },
   fields: [
     { label: "NAME", value: "Pawan Kumar" },

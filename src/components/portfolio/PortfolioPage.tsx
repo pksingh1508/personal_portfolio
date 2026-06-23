@@ -30,7 +30,9 @@ function SectionShell({
       className={`scroll-mt-24 px-margin-mobile py-20 md:px-margin-desktop md:py-28 ${className}`}
       id={id}
     >
-      <div className="mx-auto w-full max-w-[1440px]">{children}</div>
+      <div className="relative z-10 mx-auto w-full max-w-[1440px]">
+        {children}
+      </div>
     </section>
   );
 }
@@ -93,7 +95,7 @@ function HudPanel({
 function ActionButton({ action }: { action: Action }) {
   return (
     <a
-      className={`inline-flex min-h-12 items-center justify-center px-8 py-3 font-code text-xs font-bold ${
+      className={`inline-flex min-h-12 items-center justify-center rounded-[4px] px-8 py-3 font-code text-xs font-bold ${
         action.variant === "primary" ? "btn-primary" : "btn-outline"
       }`}
       href={action.href}
@@ -103,12 +105,46 @@ function ActionButton({ action }: { action: Action }) {
   );
 }
 
+function HeroTerminal() {
+  return (
+    <div className="hero-terminal-card relative overflow-hidden p-6 font-code text-sm sm:p-8">
+      <div className="relative mb-5 text-on-surface-variant">
+        {hero.terminalTitle}
+      </div>
+      <pre className="relative whitespace-pre-wrap leading-7">
+        {hero.codeLines.map((line, lineIndex) => (
+          <span className="block" key={`hero-code-${lineIndex}`}>
+            {line.map((segment, segmentIndex) => (
+              <span
+                className={
+                  "tone" in segment && segment.tone
+                    ? `code-token-${segment.tone}`
+                    : "code-token"
+                }
+                key={`${lineIndex}-${segmentIndex}`}
+              >
+                {segment.text}
+              </span>
+            ))}
+            {lineIndex === hero.codeLines.length - 1 ? (
+              <span className="blinking-cursor text-primary" />
+            ) : null}
+          </span>
+        ))}
+      </pre>
+    </div>
+  );
+}
+
 function HeroSection() {
   return (
-    <SectionShell className="pt-28 md:pt-32" id="home">
+    <SectionShell
+      className="hero-section relative overflow-hidden pt-28 md:pt-32"
+      id="home"
+    >
       <div className="grid min-h-[640px] grid-cols-1 items-start gap-gutter lg:grid-cols-2">
         <div className="relative z-10 space-y-8">
-          <div className="inline-flex items-center gap-2 border border-primary/30 bg-surface-container-high px-3 py-1 font-code text-xs font-bold text-primary shadow-[0_0_10px_rgba(34,211,238,0.2)]">
+          <div className="hero-status-badge inline-flex items-center gap-2 rounded-[5px] border border-primary/30 bg-surface-container-high px-3 py-1 font-code text-xs font-bold text-primary">
             <span className="h-2 w-2 rounded-full bg-success shadow-[0_0_8px_var(--success)] animate-pulse" />
             {hero.badge}
           </div>
@@ -121,16 +157,7 @@ function HeroSection() {
             {hero.description}
           </p>
 
-          <HudPanel className="relative overflow-hidden border-l-4 border-l-primary p-6 font-code text-sm">
-            <div className="absolute inset-0 bg-primary/5 opacity-0 transition-opacity duration-300 hover:opacity-100" />
-            <div className="relative mb-3 text-on-surface-variant">
-              {hero.terminalTitle}
-            </div>
-            <pre className="relative whitespace-pre-wrap leading-7 terminal-text">
-              {hero.codeLines.join("\n")}
-              <span className="blinking-cursor text-primary" />
-            </pre>
-          </HudPanel>
+          <HeroTerminal />
 
           <div className="flex flex-wrap gap-4 pt-2">
             {hero.actions.map((action) => (
@@ -139,8 +166,8 @@ function HeroSection() {
           </div>
         </div>
 
-        <HudPanel className="relative mt-6 flex h-[420px] items-center justify-center overflow-hidden lg:mt-10 lg:h-[560px]">
-          <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-tr from-surface/80 to-transparent" />
+        <HudPanel className="hero-visual-card relative mt-6 flex h-[420px] items-center justify-center overflow-hidden lg:mt-16 lg:h-[700px] xl:h-[725px]">
+          <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-tr from-surface/70 via-transparent to-transparent" />
           <ThreeSystem />
           <div className="absolute bottom-4 right-4 z-20 font-code text-xs text-primary/50">
             {hero.renderStatus}
