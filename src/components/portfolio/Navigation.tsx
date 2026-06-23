@@ -1,81 +1,87 @@
-import {
-  headerIcons,
-  sidebarItems,
-  siteMeta,
-  topNavItems,
-} from "@/data";
+import { navItems, siteMeta } from "@/constant/data";
 import { Symbol } from "./Symbol";
 
 export function TopNav() {
   return (
-    <header className="fixed left-0 right-0 top-0 z-50 flex h-14 w-full items-center justify-between bg-surface px-6 py-3 font-headline text-xs uppercase text-primary">
-      <a
-        href="#hero"
-        className="text-lg font-bold text-primary transition-colors hover:text-primary-container"
-      >
-        {siteMeta.productName}
-      </a>
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-primary/25 bg-surface/65 shadow-[0_0_15px_rgba(34,211,238,0.2)] backdrop-blur-xl">
+      <div className="mx-auto flex h-20 max-w-[1600px] items-center justify-between px-margin-mobile md:px-margin-desktop">
+        <a
+          className="font-headline text-2xl font-bold tracking-normal text-primary transition-colors hover:text-primary-container"
+          href="#home"
+        >
+          {siteMeta.name}
+        </a>
 
-      <nav className="hidden items-center gap-8 md:flex">
-        {topNavItems.map((item) => (
+        <nav className="hidden items-center gap-8 lg:flex">
+          {navItems.map((item) => (
+            <a
+              className="border-b-2 border-transparent px-2 py-2 font-code text-xs font-bold text-on-surface-variant transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:text-primary"
+              href={item.href}
+              key={item.label}
+            >
+              {item.label}
+            </a>
+          ))}
           <a
-            key={item.label}
-            className={
-              item.active
-                ? "border-b-2 border-primary pb-1 text-primary transition-colors duration-150 hover:bg-surface-variant hover:text-primary"
-                : "text-secondary opacity-60 transition-colors duration-150 hover:bg-surface-variant hover:text-primary"
-            }
-            href={item.href}
+            aria-label="Open terminal section"
+            className="text-on-surface-variant transition-colors hover:text-primary"
+            href="#message"
           >
-            {item.label}
+            <Symbol>terminal</Symbol>
           </a>
-        ))}
-      </nav>
+        </nav>
 
-      <div className="flex items-center gap-4">
-        {headerIcons.map((icon) => (
-          <Symbol
-            key={icon}
-            className="cursor-pointer transition-colors hover:text-primary"
-          >
-            {icon}
-          </Symbol>
-        ))}
+        <a
+          aria-label="Open mobile command menu"
+          className="text-primary lg:hidden"
+          href="#message"
+        >
+          <Symbol>menu</Symbol>
+        </a>
       </div>
     </header>
   );
 }
 
-export function SideNav() {
+export function MobileCommandRail() {
   return (
-    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col bg-surface pt-20 lg:flex">
-      <div className="mb-10 px-6">
-        <div className="font-headline text-xl font-black text-primary">
-          {siteMeta.logName}
-        </div>
-        <div className="mt-1 font-headline text-[10px] font-bold uppercase text-secondary opacity-50">
-          {siteMeta.status}
-        </div>
-      </div>
+    <nav className="fixed inset-x-0 bottom-0 z-50 grid h-16 grid-cols-6 border-t border-secondary/30 bg-surface-container-lowest/90 backdrop-blur-md lg:hidden">
+      {navItems.map((item) => (
+        <a
+          aria-label={item.label}
+          className="flex items-center justify-center text-on-surface-variant transition-colors hover:bg-primary/10 hover:text-primary"
+          href={item.href}
+          key={item.label}
+        >
+          <Symbol
+            className={
+              item.label === "MESSAGE"
+                ? "bg-primary/10 p-2 text-primary"
+                : undefined
+            }
+          >
+            {item.icon}
+          </Symbol>
+        </a>
+      ))}
+    </nav>
+  );
+}
 
-      <nav className="flex-1">
-        <div className="flex flex-col">
-          {sidebarItems.map((item) => (
-            <a
-              key={item.label}
-              className={
-                item.active
-                  ? "flex items-center gap-4 bg-primary-container p-4 font-headline text-[10px] font-bold uppercase text-on-primary"
-                  : "flex items-center gap-4 p-4 font-headline text-[10px] uppercase text-secondary opacity-50 transition-all hover:bg-surface-variant hover:text-primary"
-              }
-              href={item.href}
-            >
-              <Symbol>{item.icon}</Symbol>
-              {item.label}
-            </a>
-          ))}
-        </div>
-      </nav>
-    </aside>
+export function StatusFooter() {
+  return (
+    <footer className="fixed inset-x-0 bottom-0 z-40 hidden h-8 items-center justify-between border-t border-secondary/30 bg-surface-container-lowest/80 px-margin-desktop font-code text-xs text-secondary backdrop-blur-md lg:flex">
+      <div>{siteMeta.footerLeft}</div>
+      <div className="flex gap-6 text-on-surface-variant">
+        {siteMeta.footerRight.map((item, index) => (
+          <span
+            className={index === 0 ? "font-bold text-secondary" : undefined}
+            key={item}
+          >
+            {item}
+          </span>
+        ))}
+      </div>
+    </footer>
   );
 }

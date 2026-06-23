@@ -1,16 +1,22 @@
 import type { Metadata } from "next";
-import { Manrope, Space_Grotesk } from "next/font/google";
-import { siteMeta } from "@/data";
+import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { siteMeta } from "@/constant/data";
 import "./globals.css";
 
-const manrope = Manrope({
-  variable: "--font-manrope",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
 });
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const jetBrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   display: "swap",
 });
@@ -28,9 +34,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${manrope.variable} ${spaceGrotesk.variable} dark h-full antialiased`}
+      className={`${inter.variable} ${spaceGrotesk.variable} ${jetBrainsMono.variable} dark h-full antialiased`}
     >
-      <body className="custom-grid flex min-h-full flex-col bg-surface text-on-background">
+      <body className="min-h-full bg-background text-on-background">
         {children}
       </body>
     </html>

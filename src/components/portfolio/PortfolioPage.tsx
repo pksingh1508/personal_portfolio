@@ -1,694 +1,858 @@
-"use client";
-
-import { motion, type Variants } from "motion/react";
-import { builds, contact, hero, identity, labs, stack, timeline } from "@/data";
-import { SideNav, TopNav } from "./Navigation";
+import {
+  contact,
+  hero,
+  logs,
+  manifest,
+  profile,
+  projects,
+  siteMeta,
+  stack,
+} from "@/constant/data";
+import { MobileCommandRail, StatusFooter, TopNav } from "./Navigation";
 import { Symbol } from "./Symbol";
+import ThreeSystem from "./ThreeSystem";
 
-const sectionReveal: Variants = {
-  hidden: { opacity: 0, y: 36 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, ease: [0.2, 0.8, 0.2, 1] },
-  },
-};
+type Action = (typeof hero.actions)[number];
+type Project = (typeof projects)[number];
+type LogEntry = (typeof logs.entries)[number];
 
-function Reveal({
+function SectionShell({
   children,
   className = "",
-  delay = 0,
+  id,
 }: {
   children: React.ReactNode;
   className?: string;
-  delay?: number;
+  id: string;
 }) {
   return (
-    <motion.div
-      className={className}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-80px" }}
-      variants={{
-        hidden: sectionReveal.hidden,
-        visible: {
-          ...sectionReveal.visible,
-          transition: { duration: 0.7, delay, ease: [0.2, 0.8, 0.2, 1] },
-        },
-      }}
+    <section
+      className={`scroll-mt-24 px-margin-mobile py-20 md:px-margin-desktop md:py-28 ${className}`}
+      id={id}
     >
-      {children}
-    </motion.div>
+      <div className="mx-auto w-full max-w-[1440px]">{children}</div>
+    </section>
   );
 }
 
-function HeroTitle() {
-  let charIndex = 0;
-
+function SectionHeader({
+  icon,
+  label,
+  title,
+  subtitle,
+}: {
+  icon?: string;
+  label?: string;
+  title: string;
+  subtitle?: string;
+}) {
   return (
-    <h1 className="mb-12 font-headline text-7xl font-bold leading-[0.8] md:text-[10rem]">
-      {hero.titleLines.map((line) => (
-        <span className="block overflow-hidden" key={line}>
-          {line.split("").map((char) => {
-            charIndex += 1;
-            return (
-              <span
-                className="char-reveal"
-                key={`${line}-${charIndex}`}
-                style={{ animationDelay: `${0.05 + charIndex * 0.05}s` }}
-              >
-                {char}
-              </span>
-            );
-          })}
-        </span>
-      ))}
-    </h1>
+    <header className="mb-12">
+      {label ? (
+        <div className="mb-4 inline-flex items-center gap-2 border border-primary/30 bg-surface-container-high px-4 py-2 font-code text-sm text-primary">
+          <span className="h-2 w-2 rounded-full bg-secondary shadow-[0_0_8px_var(--secondary)]" />
+          {label}
+        </div>
+      ) : null}
+      <div className="flex items-center gap-4">
+        {icon ? <Symbol className="text-3xl text-primary">{icon}</Symbol> : null}
+        <h2 className="font-headline text-4xl font-bold text-on-surface md:text-6xl">
+          {title}
+        </h2>
+      </div>
+      {subtitle ? (
+        <p className="mt-4 max-w-3xl font-code text-sm text-on-surface-variant md:text-base">
+          {subtitle}
+        </p>
+      ) : null}
+    </header>
+  );
+}
+
+function HudPanel({
+  children,
+  className = "",
+  corners = false,
+  id,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  corners?: boolean;
+  id?: string;
+}) {
+  return (
+    <div
+      className={`panel-glass ${corners ? "hud-corners" : ""} ${className}`}
+      id={id}
+    >
+      {children}
+    </div>
+  );
+}
+
+function ActionButton({ action }: { action: Action }) {
+  return (
+    <a
+      className={`inline-flex min-h-12 items-center justify-center px-8 py-3 font-code text-xs font-bold ${
+        action.variant === "primary" ? "btn-primary" : "btn-outline"
+      }`}
+      href={action.href}
+    >
+      {action.label}
+    </a>
   );
 }
 
 function HeroSection() {
   return (
-    <section
-      className="relative flex min-h-230.25 items-center overflow-hidden px-10 md:px-20"
-      id="hero"
-    >
-      <div className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 select-none opacity-10">
-        <div className="vertical-text font-headline text-8xl font-black leading-none text-primary md:text-[10rem] xl:text-[12rem]">
-          {hero.sideLabel}
-        </div>
-      </div>
-
-      <div className="relative z-10 max-w-5xl">
-        <div className="mb-6 flex items-center gap-3">
-          <span className="inline-block h-3 w-3 animate-pulse bg-primary" />
-          <span className="font-headline text-xs font-bold uppercase text-primary">
-            {hero.status}
-          </span>
-        </div>
-
-        <HeroTitle />
-
-        <div className="flex flex-wrap items-end gap-6">
-          <div className="w-full max-w-md border-l-4 border-primary bg-surface-container p-6 shadow-[0_0_20px_rgba(153,247,255,0.05)]">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex gap-2">
-                <div className="h-2 w-2 bg-error" />
-                <div className="h-2 w-2 bg-primary" />
-                <div className="h-2 w-2 bg-secondary-container" />
-              </div>
-              <span className="font-headline text-[10px] opacity-40">
-                {hero.terminalName}
-              </span>
-            </div>
-            <code className="block font-body text-sm leading-relaxed text-secondary">
-              {hero.terminalLines.map((line) => (
-                <span key={line}>
-                  <span className="text-primary">&gt;</span> {line}
-                  <br />
-                </span>
-              ))}
-            </code>
+    <SectionShell className="pt-28 md:pt-32" id="home">
+      <div className="grid min-h-[640px] grid-cols-1 items-start gap-gutter lg:grid-cols-2">
+        <div className="relative z-10 space-y-8">
+          <div className="inline-flex items-center gap-2 border border-primary/30 bg-surface-container-high px-3 py-1 font-code text-xs font-bold text-primary shadow-[0_0_10px_rgba(34,211,238,0.2)]">
+            <span className="h-2 w-2 rounded-full bg-success shadow-[0_0_8px_var(--success)] animate-pulse" />
+            {hero.badge}
           </div>
 
-          <motion.button
-            className="bg-primary-container px-10 py-5 font-headline text-sm font-bold uppercase text-on-primary transition-all duration-300 hover:bg-primary hover:brightness-110 hover:shadow-[0_0_20px_rgba(0,242,255,0.4)]"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {hero.cta}
-          </motion.button>
-        </div>
-      </div>
+          <h1 className="max-w-3xl font-headline text-5xl font-bold leading-tight text-on-background md:text-6xl xl:text-7xl">
+            {hero.title} <span className="text-primary">{hero.highlight}</span>
+          </h1>
 
-      <motion.div
-        className="hero-orb absolute right-20 top-20 hidden h-96 w-96 xl:block"
-        animate={{ y: [0, -12, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <div className="glitch-img-container glitch-overlay">
-          <img
-            className="h-full w-full object-contain opacity-40 mix-blend-screen"
-            src={hero.visual.src}
-            alt={hero.visual.alt}
-          />
-          <div
-            className="glitch-effect"
-            style={{ backgroundImage: `url("${hero.visual.src}")` }}
-          />
+          <p className="max-w-xl font-body text-lg leading-relaxed text-on-surface-variant md:text-xl">
+            {hero.description}
+          </p>
+
+          <HudPanel className="relative overflow-hidden border-l-4 border-l-primary p-6 font-code text-sm">
+            <div className="absolute inset-0 bg-primary/5 opacity-0 transition-opacity duration-300 hover:opacity-100" />
+            <div className="relative mb-3 text-on-surface-variant">
+              {hero.terminalTitle}
+            </div>
+            <pre className="relative whitespace-pre-wrap leading-7 terminal-text">
+              {hero.codeLines.join("\n")}
+              <span className="blinking-cursor text-primary" />
+            </pre>
+          </HudPanel>
+
+          <div className="flex flex-wrap gap-4 pt-2">
+            {hero.actions.map((action) => (
+              <ActionButton action={action} key={action.label} />
+            ))}
+          </div>
         </div>
-      </motion.div>
-    </section>
+
+        <HudPanel className="relative mt-6 flex h-[420px] items-center justify-center overflow-hidden lg:mt-10 lg:h-[560px]">
+          <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-tr from-surface/80 to-transparent" />
+          <ThreeSystem />
+          <div className="absolute bottom-4 right-4 z-20 font-code text-xs text-primary/50">
+            {hero.renderStatus}
+          </div>
+        </HudPanel>
+      </div>
+      <div className="hud-divider mt-12" />
+    </SectionShell>
   );
 }
 
-function AboutSection() {
+function ManifestSection() {
   return (
-    <section
-      className="relative bg-surface-container px-10 py-32 md:px-20"
-      id="about"
-    >
-      <div className="grid grid-cols-1 gap-16 md:grid-cols-12">
-        <Reveal className="md:col-span-4">
-          <h2 className="mb-8 flex items-center gap-4 font-headline text-4xl font-bold">
-            <span className="text-primary">{identity.index}</span>
-            {identity.heading}
-          </h2>
-          <div className="bg-surface p-8">
-            <div className="mb-6 font-headline text-[10px] uppercase text-primary">
-              {identity.fileName}
-            </div>
-            <ul className="space-y-4 font-body text-sm">
-              {identity.facts.map(([label, value]) => (
-                <li
-                  className="flex justify-between border-b border-outline-variant pb-2"
-                  key={label}
-                >
-                  <span className="opacity-50">{label}</span>
-                  <span>{value}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Reveal>
-
-        <Reveal
-          className="flex flex-col justify-center md:col-span-8"
-          delay={0.12}
-        >
-          <p className="font-body text-2xl font-light leading-tight text-secondary md:text-4xl">
-            {identity.statementBefore}{" "}
-            <span className="font-bold text-on-background underline decoration-primary decoration-4 underline-offset-8">
-              {identity.statementHighlight}
-            </span>{" "}
-            {identity.statementAfter}
-          </p>
-          <div className="mt-12 flex items-start gap-12">
-            {identity.stats.map((stat) => (
-              <div className="flex flex-col" key={stat.label}>
-                <span className="font-headline text-5xl font-bold text-primary">
-                  {stat.value}
+    <SectionShell id="manifest">
+      <SectionHeader icon="fingerprint" title={manifest.title} />
+      <div className="grid grid-cols-1 gap-gutter lg:grid-cols-3">
+        <HudPanel className="p-panel lg:col-span-2">
+          <div className="grid grid-cols-1 gap-4 font-code text-sm sm:grid-cols-2">
+            {manifest.facts.map((fact) => (
+              <div
+                className={`flex border-b border-outline-variant/30 pb-3 ${
+                  fact.wide ? "sm:col-span-2" : ""
+                }`}
+                key={fact.label}
+              >
+                <span className="w-36 shrink-0 text-on-surface-variant">
+                  {fact.label}
                 </span>
-                <span className="mt-2 font-headline text-[10px] uppercase opacity-40">
-                  {stat.label}
-                </span>
+                <span className="font-bold text-primary">{fact.value}</span>
               </div>
             ))}
           </div>
-        </Reveal>
+          <p className="mt-10 border-l-2 border-primary/50 pl-5 font-body text-lg leading-relaxed text-on-surface-variant">
+            {manifest.statement}
+          </p>
+        </HudPanel>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
+          {manifest.stats.map((stat) => (
+            <HudPanel
+              className="flex min-h-28 flex-col items-center justify-center p-6 text-center transition-colors hover:bg-surface-container-high"
+              key={stat.label}
+            >
+              {stat.value ? (
+                <div className="font-headline text-3xl font-bold text-primary">
+                  {stat.value}
+                </div>
+              ) : (
+                <Symbol className="mb-3 text-3xl text-secondary">
+                  {stat.icon ?? "terminal"}
+                </Symbol>
+              )}
+              <div className="mt-2 font-code text-xs font-bold text-on-surface-variant">
+                {stat.label}
+              </div>
+            </HudPanel>
+          ))}
+        </div>
       </div>
-    </section>
+    </SectionShell>
   );
 }
 
-function BuildCard({
-  build,
-  index,
-}: {
-  build: (typeof builds)[number];
-  index: number;
-}) {
+function ProjectExplorer({ activeProject }: { activeProject: Project }) {
   return (
-    <motion.article
-      className={`group relative flex aspect-square cursor-pointer flex-col overflow-hidden border border-outline-variant/10 ${
-        build.offset
-          ? "bg-surface-container-high md:translate-y-12"
-          : "bg-surface-container"
-      } transition-all duration-500 hover:bg-surface-variant/50 hover:shadow-[0_0_30px_rgba(153,247,255,0.1)] hover:backdrop-blur-sm`}
-      initial={{ opacity: 0, y: 42 }}
-      whileInView={{ opacity: 1, y: build.offset ? 48 : 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.65, delay: index * 0.08 }}
-      whileHover={{ scale: 1.02 }}
-    >
-      <div className="relative z-10 flex h-full flex-col p-8">
-        <div className="mb-6 flex items-start justify-between">
-          <div className="flex flex-col">
-            <span className="font-headline text-3xl font-bold text-primary opacity-20 transition-opacity group-hover:opacity-100">
-              {build.id}
-            </span>
-            <div className="mt-2 flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-status-pulse" />
-              <span className="font-headline text-[8px] font-bold text-green-500">
-                {build.status}
+    <HudPanel className="flex min-h-[520px] flex-col overflow-hidden lg:min-h-full">
+      <div className="flex items-center justify-between border-b border-primary/25 p-4">
+        <span className="font-code text-sm font-bold text-secondary">
+          EXPLORER // ROOT
+        </span>
+        <Symbol className="text-secondary">account_tree</Symbol>
+      </div>
+      <div className="flex-1 p-4">
+        <div className="mb-4 pl-2 font-code text-sm text-on-surface-variant">
+          ~/projects/shipped
+        </div>
+        <nav className="flex flex-col gap-1">
+          {projects.map((project) => {
+            const active = project.name === activeProject.name;
+            return (
+              <a
+                className={`flex items-center gap-3 border-l-2 px-3 py-3 text-left font-code text-sm transition-all ${
+                  active
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-transparent text-on-surface-variant hover:bg-white/5 hover:text-primary"
+                }`}
+                href={`#project-${project.name.toLowerCase()}`}
+                key={project.name}
+              >
+                <Symbol className="text-lg">
+                  {active ? "folder_open" : "folder"}
+                </Symbol>
+                <span className="truncate">{project.name}</span>
+              </a>
+            );
+          })}
+        </nav>
+      </div>
+      <div className="flex items-center gap-2 border-t border-primary/25 bg-surface-container-lowest/50 p-4 font-code text-sm text-on-surface-variant">
+        <span className="text-primary">&gt;</span>
+        <span>
+          cd {activeProject.name}
+          <span className="ml-1 inline-block h-4 w-2 animate-pulse bg-primary align-middle" />
+        </span>
+      </div>
+    </HudPanel>
+  );
+}
+
+function ArchitectureGrid({ project }: { project: Project }) {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {project.architecture.map((item) => (
+        <div
+          className="border border-primary/25 bg-surface-container/30 p-4 transition-colors hover:border-primary/80"
+          key={item.label}
+        >
+          <div className="mb-2 font-code text-xs font-bold text-secondary">
+            {item.label}
+          </div>
+          <div className="font-headline text-xl font-semibold text-on-surface">
+            {item.value}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DeploymentLog({ lines }: { lines: string[] }) {
+  return (
+    <div className="relative overflow-hidden border border-outline-variant bg-surface-container-lowest p-4 font-code text-sm leading-7 text-success">
+      <div className="scanlines absolute inset-0 opacity-20" />
+      <div className="relative">
+        {lines.map((line) => (
+          <div className={line.startsWith(">") ? "mt-2 text-primary" : ""} key={line}>
+            {line}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProjectDetail({ project }: { project: Project }) {
+  return (
+    <HudPanel className="glow-cyan hud-corners overflow-hidden" id={`project-${project.name.toLowerCase()}`}>
+      <div className="border-b border-primary/25 p-panel">
+        <div className="flex flex-col gap-8 xl:flex-row xl:items-start xl:justify-between">
+          <div>
+            <div className="mb-3 flex items-center gap-3">
+              <span className="border border-primary/30 bg-primary/10 px-2 py-1 font-code text-[10px] text-primary">
+                [{project.status}]
+              </span>
+              <span className="border border-secondary/30 bg-secondary/10 px-2 py-1 font-code text-[10px] text-secondary">
+                UUID: {project.uuid}
               </span>
             </div>
+            <h3 className="font-headline text-4xl font-bold text-primary md:text-6xl">
+              {project.name}
+            </h3>
           </div>
-          <Symbol className="text-outline transition-colors group-hover:text-primary">
-            {build.icon}
-          </Symbol>
+          <div className="flex flex-wrap gap-4">
+            <a
+              className="btn-outline inline-flex min-h-12 items-center gap-2 px-6 py-3 font-code text-xs font-bold"
+              href="#message"
+            >
+              <Symbol className="text-base">code</Symbol>
+              {project.repoLabel ?? "VIEW REPO"}
+            </a>
+            <a
+              className="btn-primary inline-flex min-h-12 items-center gap-2 px-6 py-3 font-code text-xs font-bold"
+              href="#message"
+            >
+              <Symbol className="text-base">launch</Symbol>
+              {project.deployLabel ?? "DEPLOYMENT"}
+            </a>
+          </div>
         </div>
+        <div className="mt-8 h-[2px] bg-primary/20">
+          <div className="h-full w-1/3 bg-primary" />
+        </div>
+      </div>
 
-        <h3 className="mb-4 font-headline text-2xl font-bold transition-transform group-hover:translate-x-1">
-          {build.title}
-        </h3>
-        <p className="mb-8 font-body text-sm text-secondary opacity-60">
-          {build.description}
+      <div className="space-y-10 p-panel">
+        <p className="max-w-5xl font-body text-lg leading-relaxed text-on-surface-variant">
+          {project.summary}
         </p>
 
-        <div className="mt-auto flex translate-y-4 flex-col gap-3 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-          <button className="w-full bg-primary py-3 font-headline text-[10px] font-bold uppercase text-on-primary transition-all hover:brightness-110 active:scale-95">
-            VIEW_BUILD
-          </button>
-          <button className="w-full border border-outline-variant py-3 font-headline text-[10px] font-bold uppercase transition-all hover:bg-white/5 active:scale-95">
-            INSPECT_STACK
-          </button>
+        <div>
+          <h4 className="mb-5 border-b border-primary/25 pb-3 font-headline text-2xl font-bold">
+            // SYSTEM_ARCHITECTURE
+          </h4>
+          <ArchitectureGrid project={project} />
+        </div>
+
+        <div>
+          <h4 className="mb-5 border-b border-primary/25 pb-3 font-headline text-2xl font-bold">
+            // CORE_FEATURES
+          </h4>
+          <ul className="space-y-3 font-body text-on-surface-variant">
+            {project.features.map((feature) => (
+              <li className="flex gap-3" key={feature}>
+                <span className="font-code font-bold text-primary">&gt;</span>
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h4 className="mb-5 border-b border-primary/25 pb-3 font-headline text-2xl font-bold">
+            // DEPLOYMENT_LOGS
+          </h4>
+          <DeploymentLog lines={project.deploymentLogs} />
         </div>
       </div>
+    </HudPanel>
+  );
+}
 
-      <div className="glitch-img-container glitch-overlay absolute inset-0 opacity-10 grayscale transition-all duration-1000 group-hover:scale-110 group-hover:opacity-20">
-        <img
-          className="h-full w-full object-cover"
-          src={build.image}
-          alt={build.imageAlt}
-        />
-        <div
-          className="glitch-effect"
-          style={{ backgroundImage: `url("${build.image}")` }}
-        />
-      </div>
-    </motion.article>
+function ProjectCards() {
+  return (
+    <div className="mt-gutter grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {projects.slice(1).map((project) => (
+        <HudPanel
+          className="group p-5 transition-all hover:-translate-y-1"
+          key={project.name}
+        >
+          <div className="mb-3 flex items-center justify-between">
+            <span className="font-code text-[10px] text-primary">
+              UUID: {project.uuid}
+            </span>
+            <span className="border border-primary/25 bg-primary/10 px-2 py-1 font-code text-[10px] text-primary">
+              [{project.status}]
+            </span>
+          </div>
+          <h4 className="font-headline text-2xl font-bold text-on-surface transition-colors group-hover:text-primary">
+            {project.name}
+          </h4>
+          <p className="mt-3 line-clamp-3 font-body text-sm leading-6 text-on-surface-variant">
+            {project.summary}
+          </p>
+        </HudPanel>
+      ))}
+    </div>
   );
 }
 
 function BuildsSection() {
-  return (
-    <section className="px-10 py-32 md:px-20" id="builds">
-      <div className="mb-16 flex items-end justify-between">
-        <div>
-          <span className="mb-4 block font-headline text-xs uppercase text-primary">
-            output_stream
-          </span>
-          <h2 className="font-headline text-6xl font-bold">SHIPPED_BUILDS</h2>
-        </div>
-        <div className="hidden text-right font-headline text-[10px] opacity-30 md:block">
-          SCANNING REPOSITORIES...
-          <br />
-          FILTER: [PRODUCTION_ONLY]
-        </div>
-      </div>
+  const activeProject = projects[0];
 
-      <div className="grid grid-cols-1 gap-0 md:grid-cols-3">
-        {builds.map((build, index) => (
-          <BuildCard build={build} index={index} key={build.id} />
-        ))}
+  return (
+    <SectionShell id="builds">
+      <SectionHeader
+        icon="account_tree"
+        title="SHIPPED_BUILDS"
+        subtitle="Repository directory view for production modules and active project systems."
+      />
+      <div className="grid grid-cols-1 gap-gutter lg:grid-cols-[320px_1fr]">
+        <ProjectExplorer activeProject={activeProject} />
+        <ProjectDetail project={activeProject} />
       </div>
-    </section>
+      <ProjectCards />
+    </SectionShell>
+  );
+}
+
+function StackNode({
+  layer,
+}: {
+  layer: (typeof stack.layers)[number];
+}) {
+  return (
+    <div className={`relative z-10 ${layer.placement}`}>
+      <div className="mb-4 flex items-center justify-center gap-2 font-code text-sm text-secondary">
+        <Symbol className="text-lg">{layer.icon}</Symbol>
+        {layer.label}
+      </div>
+      <div
+        className={`clipped-panel border bg-surface-container-low/80 p-6 backdrop-blur-md transition-all duration-300 hover:shadow-[0_0_25px_rgba(34,211,238,0.25)] ${
+          layer.emphasized
+            ? "border-primary/40 shadow-[0_0_20px_rgba(34,211,238,0.25)]"
+            : "border-primary/20"
+        }`}
+      >
+        <div className="flex flex-wrap justify-center gap-4">
+          {layer.tools.map((tool) => (
+            <div
+              className="flex min-h-28 w-28 flex-col items-center justify-center gap-3 border border-outline-variant/50 bg-surface p-3 text-center transition-colors hover:border-primary/70"
+              key={tool.name}
+            >
+              <Symbol className="text-4xl text-primary">{tool.icon}</Symbol>
+              <span className="font-code text-sm font-bold">{tool.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
 function StackSection() {
   return (
-    <section
-      className="bg-surface-container-lowest px-10 py-32 md:px-20"
-      id="stack"
-    >
-      <div className="mx-auto max-w-6xl">
-        <div className="flex flex-col items-start gap-12 md:flex-row">
-          <Reveal className="md:w-1/3">
-            <h2 className="mb-6 font-headline text-5xl font-bold">
-              {stack.title}
-            </h2>
-            <p className="max-w-sm font-body text-secondary opacity-60">
-              {stack.description}
-            </p>
-            <div className="mt-10 border-l-2 border-primary bg-surface-container p-6">
-              <span className="mb-2 block font-headline text-[10px] text-primary">
-                {stack.label}
-              </span>
-              <span className="font-headline text-lg font-bold">
-                {stack.focus}
-              </span>
-            </div>
-          </Reveal>
-
-          <div className="grid grid-cols-2 gap-4 md:w-2/3 md:grid-cols-4">
-            {stack.tools.map((tool, index) => (
-              <motion.div
-                className="group flex cursor-pointer flex-col items-center border-b border-outline-variant bg-surface-container p-6 text-center transition-all duration-300 ease-out hover:-translate-y-2 hover:bg-surface-variant hover:shadow-[0_10px_30px_-10px_rgba(0,242,255,0.2)]"
-                key={tool.name}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.45, delay: index * 0.04 }}
-                whileHover={{ scale: 1.05 }}
-              >
-                <Symbol className="mb-4 text-4xl text-primary opacity-50 transition-all duration-300 group-hover:text-[#00f2ff] group-hover:opacity-100 group-hover:drop-shadow-[0_0_8px_rgba(0,242,255,0.8)]">
-                  {tool.icon}
-                </Symbol>
-                <span className="font-headline text-sm font-bold uppercase">
-                  {tool.name}
-                </span>
-                <span className="mt-1 font-headline text-[8px] opacity-30 transition-opacity duration-300 group-hover:opacity-100">
-                  {tool.tag}
-                </span>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function TimelineSection() {
-  return (
-    <section
-      className="relative overflow-hidden px-10 py-32 md:px-20"
-      id="logs"
-    >
-      <motion.div
-        className="timeline-line-grow absolute bottom-0 left-1/2 top-0 hidden w-px bg-primary opacity-20 md:block"
-        initial={{ scaleY: 0 }}
-        whileInView={{ scaleY: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1.5, ease: [0.4, 0, 0.2, 1] }}
+    <SectionShell id="stack">
+      <SectionHeader
+        label={stack.eyebrow}
+        title={stack.title}
+        subtitle={stack.description}
       />
-      <h2 className="mb-24 text-center font-headline text-5xl font-bold">
-        SYSTEM_TIMELINE
-      </h2>
-
-      <div className="relative z-10 mx-auto max-w-4xl space-y-24">
-        {timeline.map((entry, index) => (
-          <motion.div
-            className={`group flex flex-col items-start gap-8 md:items-center ${
-              entry.reverse ? "md:flex-row-reverse" : "md:flex-row"
-            }`}
-            key={entry.log}
-            initial={{ opacity: 0, x: entry.reverse ? 50 : -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{
-              duration: 0.8,
-              delay: index * 0.08,
-              ease: [0.2, 0.8, 0.2, 1],
-            }}
-          >
-            <div
-              className={`md:w-1/2 ${entry.reverse ? "md:text-left" : "md:text-right"}`}
-            >
-              <span className="font-headline text-xs font-bold text-primary">
-                {entry.log}
-              </span>
-              <h3 className="mt-2 font-headline text-2xl font-bold">
-                {entry.title}
-              </h3>
-              <p className="mt-4 font-body text-sm text-secondary opacity-60">
-                {entry.description}
-              </p>
-            </div>
-
-            <div
-              className={`icon-glow z-10 hidden h-10 w-10 shrink-0 items-center justify-center transition-all duration-500 md:flex ${
-                entry.active ? "icon-active bg-primary" : "bg-outline-variant"
-              }`}
-            >
-              <Symbol
-                className={entry.active ? "text-on-primary" : "text-surface"}
-              >
-                {entry.icon}
-              </Symbol>
-            </div>
-
-            <div
-              className={`flex gap-4 md:w-1/2 ${entry.reverse ? "justify-end" : ""}`}
-            >
-              {entry.tags.map((tag) => (
-                <div
-                  className="bg-surface-container-highest px-3 py-1 font-headline text-[10px] text-primary"
-                  key={tag}
-                >
-                  {tag}
-                </div>
-              ))}
-            </div>
-          </motion.div>
+      <div className="relative grid grid-cols-1 gap-14 pb-10 md:grid-cols-12 md:gap-y-24">
+        <svg
+          aria-hidden="true"
+          className="absolute inset-0 hidden h-full w-full md:block"
+        >
+          <line
+            stroke="rgba(34, 211, 238, 0.18)"
+            strokeDasharray="4 4"
+            strokeWidth="2"
+            x1="50%"
+            x2="50%"
+            y1="8%"
+            y2="92%"
+          />
+          <line
+            stroke="rgba(34, 211, 238, 0.16)"
+            strokeDasharray="4 4"
+            strokeWidth="2"
+            x1="28%"
+            x2="50%"
+            y1="28%"
+            y2="52%"
+          />
+          <line
+            stroke="rgba(34, 211, 238, 0.16)"
+            strokeDasharray="4 4"
+            strokeWidth="2"
+            x1="72%"
+            x2="50%"
+            y1="30%"
+            y2="52%"
+          />
+          <line
+            stroke="rgba(34, 211, 238, 0.16)"
+            strokeDasharray="4 4"
+            strokeWidth="2"
+            x1="50%"
+            x2="34%"
+            y1="52%"
+            y2="80%"
+          />
+          <line
+            stroke="rgba(34, 211, 238, 0.16)"
+            strokeDasharray="4 4"
+            strokeWidth="2"
+            x1="50%"
+            x2="66%"
+            y1="52%"
+            y2="80%"
+          />
+        </svg>
+        {stack.layers.map((layer) => (
+          <StackNode key={layer.label} layer={layer} />
         ))}
       </div>
-    </section>
+    </SectionShell>
   );
 }
 
-function LabSection() {
+function StatusBadge({ entry }: { entry: LogEntry }) {
+  const className =
+    entry.statusTone === "success"
+      ? "bg-[#003300] text-[#00ff00]"
+      : "bg-[#332200] text-warning";
+
   return (
-    <section className="relative px-10 py-32 md:px-20" id="lab">
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <div className="absolute -left-20 -top-20 h-150 w-150 bg-primary/5 blur-[120px]" />
-      </div>
-
-      <div className="relative z-10">
-        <div className="mb-16 flex items-center gap-6">
-          <h2 className="font-headline text-5xl font-bold">NOW_COMPILING</h2>
-          <div className="h-0.5 flex-1 bg-outline-variant opacity-20" />
-        </div>
-
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-          {labs.map((lab, index) => (
-            <motion.article
-              className="glass-panel group relative cursor-crosshair border border-white/5 p-10"
-              key={lab.title}
-              initial={{ opacity: 0, y: 32 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.55, delay: index * 0.08 }}
-            >
-              <div className="mb-10 flex items-center justify-between">
-                <span className="bg-primary px-3 py-1 font-headline text-[10px] font-bold uppercase text-on-primary">
-                  {lab.kind}
-                </span>
-                <Symbol className="opacity-30">{lab.icon}</Symbol>
-              </div>
-              <h3 className="mb-4 font-headline text-3xl font-bold">
-                {lab.title}
-              </h3>
-              <p className="mb-8 font-body text-secondary opacity-70">
-                {lab.description}
-              </p>
-              <div className="flex items-center gap-4">
-                <div
-                  className={`h-2 w-2 rounded-full ${
-                    lab.pulse ? "animate-ping bg-primary" : "bg-green-500"
-                  }`}
-                />
-                <span className="font-headline text-[10px] uppercase opacity-40">
-                  {lab.status}
-                </span>
-              </div>
-              <div className="absolute right-0 top-0 p-4 opacity-0 transition-opacity group-hover:opacity-100">
-                <Symbol className="text-primary">arrow_outward</Symbol>
-              </div>
-            </motion.article>
-          ))}
-        </div>
-      </div>
-    </section>
+    <span className={`px-2 py-0.5 text-xs ${className}`}>[{entry.status}]</span>
   );
 }
 
-function ContactSection() {
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-  }
-
+function LogRow({ entry }: { entry: LogEntry }) {
   return (
-    <section
-      className="relative overflow-hidden border-t border-outline-variant/10 px-10 py-32 md:px-20"
-      id="contact"
-    >
-      <div className="corner-accent pointer-events-none absolute left-10 top-10 z-0 h-40 w-40 border border-primary/10 opacity-50" />
-      <div className="corner-accent-br pointer-events-none absolute bottom-10 right-10 z-0 h-40 w-40 border border-primary/10 opacity-50" />
-
-      <Reveal className="relative z-10 mx-auto max-w-6xl">
-        <div className="mb-24 text-center">
-          <span className="mb-8 block font-headline text-xs font-bold uppercase text-primary">
-            {contact.eyebrow}
-          </span>
-          <h2 className="font-headline text-6xl font-bold md:text-8xl">
-            {contact.title}
-          </h2>
-        </div>
-
-        <div className="relative grid grid-cols-1 gap-12 overflow-hidden border border-outline-variant/20 bg-surface-container p-8 md:p-12 lg:grid-cols-12">
-          <div className="hidden border-r border-outline-variant/20 pr-8 lg:col-span-4 lg:block">
-            <div className="space-y-6">
-              <div className="flex flex-col gap-1">
-                <span className="font-headline text-[10px] uppercase text-primary opacity-50">
-                  {contact.connectionTitle}
-                </span>
-                <div className="h-px w-full bg-primary/20" />
-              </div>
-
-              <ul className="space-y-4 font-body text-[11px] text-secondary/70">
-                {contact.connectionParameters.map((parameter) => (
-                  <li
-                    className="flex items-center justify-between"
-                    key={parameter.label}
-                  >
-                    <span className="font-bold">{parameter.label}</span>
-                    <span
-                      className={
-                        parameter.status
-                          ? "flex items-center gap-1 text-green-500"
-                          : "text-primary"
-                      }
-                    >
-                      {parameter.value}
-                      {parameter.status ? (
-                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
-                      ) : null}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="mt-12 border border-white/5 bg-black/40 p-4">
-                <code className="block text-[9px] leading-tight text-primary/40">
-                  {contact.terminalStatus.map((line) => (
-                    <span key={line}>
-                      &gt; {line}
-                      <br />
-                    </span>
-                  ))}
-                </code>
-              </div>
+    <div className={`group/entry flex flex-col gap-3 ${entry.muted ? "opacity-70" : ""}`}>
+      <div className="flex flex-wrap items-center gap-4 border-b border-outline-variant/30 pb-2 text-on-surface-variant">
+        <span className="text-secondary">[{entry.time}]</span>
+        <StatusBadge entry={entry} />
+        <span className="text-primary">{entry.period}</span>
+        <span className="opacity-50">||</span>
+        <span className="font-bold text-on-surface">{entry.title}</span>
+      </div>
+      <div className="border-l border-primary/20 pl-6 leading-relaxed text-on-surface/80 transition-colors group-hover/entry:border-primary/60 md:ml-10 md:pl-12">
+        {entry.lines.map((line) => {
+          const [prefix, metric] = line.split(": ");
+          const isMetric = line.startsWith("Metric Delta:");
+          return (
+            <div key={line}>
+              &gt;{" "}
+              {isMetric ? (
+                <>
+                  {prefix}: <span className="text-secondary">{metric}</span>
+                </>
+              ) : (
+                line
+              )}
             </div>
-          </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
-          <form className="space-y-12 lg:col-span-8" onSubmit={handleSubmit}>
+function LogsSection() {
+  return (
+    <SectionShell id="logs">
+      <SectionHeader title={logs.title} subtitle={logs.subtitle} />
+
+      <HudPanel className="mb-8 flex items-center gap-4 p-4">
+        <Symbol className="text-primary/70">search</Symbol>
+        <div className="flex-1 font-code text-sm text-primary">
+          {logs.command}
+          <span className="ml-2 inline-block h-4 w-2 animate-pulse bg-primary align-middle" />
+        </div>
+        <div className="hidden border border-outline-variant bg-surface-container px-3 py-2 font-code text-xs text-on-surface-variant sm:block">
+          [RET] TO EXECUTE
+        </div>
+      </HudPanel>
+
+      <div className="terminal-panel overflow-hidden">
+        <div className="flex items-center justify-between border-b border-primary/25 bg-surface-container-high px-4 py-2 font-code text-xs font-bold text-on-surface-variant">
+          <span>{logs.file}</span>
+          <span className="text-primary">READ_ONLY</span>
+        </div>
+        <div className="space-y-8 p-panel font-code text-sm md:text-base">
+          {logs.entries.map((entry) => (
+            <LogRow entry={entry} key={`${entry.time}-${entry.title}`} />
+          ))}
+          <div className="flex items-center gap-4 pt-4 text-on-surface-variant/50">
+            <span className="h-px flex-1 bg-outline-variant/30" />
+            <span className="font-code text-[10px]">EOF</span>
+            <span className="h-px flex-1 bg-outline-variant/30" />
+          </div>
+        </div>
+      </div>
+    </SectionShell>
+  );
+}
+
+function ProfileSection() {
+  return (
+    <SectionShell id="profile">
+      <header className="mb-12 flex items-center gap-4">
+        <div className="h-[2px] w-12 bg-primary" />
+        <h2 className="font-code text-sm uppercase text-secondary md:text-base">
+          {profile.header}
+        </h2>
+        <div className="h-[2px] flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
+      </header>
+
+      <div className="grid grid-cols-1 gap-gutter lg:grid-cols-12">
+        <HudPanel className="hud-corners overflow-hidden p-1 lg:col-span-4">
+          <div className="mb-4 flex h-1 bg-surface-variant">
+            <div className="h-full w-1/3 bg-primary flicker" />
+          </div>
+          <div className="relative aspect-[4/5] overflow-hidden border border-primary/10 bg-surface-container-lowest">
+            <div className="scan-sweep absolute inset-x-0 top-0 z-20 h-10 bg-gradient-to-b from-primary/0 via-primary/10 to-primary/0" />
+            <img
+              alt={profile.avatar.alt}
+              className="h-full w-full object-cover opacity-80 mix-blend-luminosity transition-all duration-700 hover:mix-blend-normal"
+              src={profile.avatar.src}
+            />
+            <div className="absolute left-4 top-4 z-20 h-4 w-4 border-l border-t border-secondary/60" />
+            <div className="absolute right-4 top-4 z-20 h-4 w-4 border-r border-t border-secondary/60" />
+            <div className="absolute bottom-4 left-4 z-20 h-4 w-4 border-b border-l border-secondary/60" />
+            <div className="absolute bottom-4 right-4 z-20 h-4 w-4 border-b border-r border-secondary/60" />
+          </div>
+          <div className="mt-1 flex items-center justify-between border-t border-primary/20 bg-surface-container-highest p-4">
+            <div className="flex items-center gap-2 text-primary">
+              <Symbol className="slow-spin text-base">radar</Symbol>
+              <span className="font-code text-sm flicker">Scanning...</span>
+            </div>
+            <span className="font-code text-sm text-secondary/60">
+              MATCH: 99.9%
+            </span>
+          </div>
+        </HudPanel>
+
+        <div className="flex flex-col gap-gutter lg:col-span-8">
+          <HudPanel className="relative p-panel">
+            <div className="absolute right-0 top-0 border-b border-l border-primary/20 bg-primary/10 px-3 py-1 font-code text-xs text-primary">
+              [ STATUS: ACTIVE ]
+            </div>
+            <h3 className="mb-8 flex items-center gap-2 font-headline text-3xl font-bold">
+              <Symbol className="text-secondary">terminal</Symbol>
+              USER_DATA_MATRIX
+            </h3>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-              {contact.fields.map((field) => (
-                <div className="group" key={field.id}>
-                  <label
-                    className="mb-4 flex items-center gap-2 font-headline text-[10px] uppercase text-primary"
-                    htmlFor={field.id}
-                  >
-                    <Symbol className="text-xs">{field.icon}</Symbol>
-                    {field.label}
-                  </label>
-                  <div className="relative flex items-center">
-                    <span className="absolute left-0 font-headline text-2xl text-primary group-focus-within:animate-pulse">
-                      &gt;
-                    </span>
-                    <input
-                      className="w-full border-0 border-b-2 border-outline-variant/40 bg-transparent py-4 pl-8 font-headline text-2xl text-white transition-all placeholder:opacity-10 focus:border-primary focus:outline-none focus:ring-0"
-                      id={field.id}
-                      placeholder={field.placeholder}
-                      type={field.type}
-                    />
+              {profile.fields.map((field) => (
+                <div
+                  className="border-l-2 border-surface-variant pl-4 transition-colors hover:border-primary"
+                  key={field.label}
+                >
+                  <div className="font-code text-sm text-on-surface-variant/70">
+                    &gt;&gt; FIELD: {field.label}
+                  </div>
+                  <div className="mt-2 font-code text-base text-on-surface">
+                    {field.value}
                   </div>
                 </div>
               ))}
             </div>
+          </HudPanel>
 
-            <div className="group">
-              <label
-                className="mb-4 flex items-center gap-2 font-headline text-[10px] uppercase text-primary"
-                htmlFor={contact.message.id}
+          <HudPanel className="flex-1 bg-surface-container-highest/40 p-panel">
+            <div className="mb-5 flex items-center gap-2 border-b border-secondary/20 pb-3 text-secondary">
+              <Symbol className="text-lg">data_object</Symbol>
+              <span className="font-code text-xs font-bold">EXEC // BIO.txt</span>
+            </div>
+            <p className="font-code text-sm leading-8 text-on-surface md:text-base">
+              <span className="mr-2 text-primary">&gt;</span>
+              {profile.bio}
+              <span className="ml-2 inline-block h-4 w-2 bg-primary align-middle flicker" />
+            </p>
+          </HudPanel>
+        </div>
+      </div>
+
+      <HudPanel className="relative mt-gutter overflow-hidden p-panel">
+        <div className="absolute -top-px left-10 h-[2px] w-28 bg-secondary" />
+        <div className="absolute -bottom-px right-10 h-[2px] w-20 bg-primary" />
+        <h3 className="mb-10 flex items-center gap-3 font-headline text-2xl font-semibold">
+          <Symbol className="text-primary-container">hub</Symbol>
+          NEURAL_NETWORK_NODES // Interests
+        </h3>
+        <div className="relative flex flex-wrap items-center justify-center gap-8 py-8">
+          <div className="absolute left-10 right-10 top-1/2 hidden h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent md:block" />
+          {profile.interests.map((interest) => (
+            <div
+              className={`relative z-10 flex flex-col items-center gap-3 ${
+                interest.featured ? "md:-translate-y-8" : ""
+              }`}
+              key={interest.label}
+            >
+              <div
+                className={`flex items-center justify-center transition-all duration-300 ${
+                  interest.featured
+                    ? "h-20 w-20 rotate-45 border border-primary/50 bg-primary/5 hover:rotate-0"
+                    : "h-16 w-16 rounded-full border-2 border-secondary/40 bg-surface-container hover:border-primary"
+                }`}
               >
-                <Symbol className="text-xs">{contact.message.icon}</Symbol>
-                {contact.message.label}
-              </label>
-              <div className="relative flex items-start">
-                <span className="absolute left-0 top-4 font-headline text-2xl text-primary group-focus-within:animate-pulse">
-                  &gt;
-                </span>
-                <textarea
-                  className="w-full resize-none border-0 border-b-2 border-outline-variant/40 bg-transparent py-4 pl-8 font-headline text-2xl text-white transition-all placeholder:opacity-10 focus:border-primary focus:outline-none focus:ring-0"
-                  id={contact.message.id}
-                  placeholder={contact.message.placeholder}
-                  rows={3}
-                />
+                <Symbol
+                  className={`text-3xl text-primary ${
+                    interest.featured ? "-rotate-45" : ""
+                  }`}
+                >
+                  {interest.icon}
+                </Symbol>
+              </div>
+              <div className="border border-outline-variant bg-surface-container-highest px-3 py-1 font-code text-xs text-on-surface-variant">
+                [ {interest.label} ]
               </div>
             </div>
-
-            <div className="flex justify-end pt-8">
-              <motion.button
-                className="group relative overflow-hidden border-2 border-primary bg-transparent px-12 py-6 transition-all duration-300 hover:border-primary hover:bg-primary/10 hover:shadow-[0_0_30px_rgba(0,242,255,0.3)]"
-                type="submit"
-                whileTap={{ scale: 0.95 }}
-              >
-                <div className="animate-scan pointer-events-none absolute inset-0 h-1 w-full bg-primary/20" />
-                <div className="absolute inset-0 h-full w-full bg-primary/5 opacity-0 transition-opacity group-hover:opacity-100" />
-                <span className="relative z-10 flex items-center gap-4 font-headline text-lg font-bold uppercase text-primary transition-colors group-hover:text-white">
-                  {contact.submitLabel}
-                  <Symbol className="text-xl">send</Symbol>
-                </span>
-                <div className="absolute -right-1 -top-1 h-2 w-2 bg-primary opacity-0 transition-all group-hover:opacity-100" />
-                <div className="absolute -bottom-1 -left-1 h-2 w-2 bg-primary opacity-0 transition-all group-hover:opacity-100" />
-              </motion.button>
-            </div>
-          </form>
+          ))}
         </div>
-      </Reveal>
-    </section>
+      </HudPanel>
+    </SectionShell>
   );
 }
 
-function Footer() {
+function ConnectionStatus({
+  node,
+}: {
+  node: (typeof contact.nodes)[number];
+}) {
+  const tone =
+    node.tone === "success"
+      ? "border-success/30 bg-success/10 text-success"
+      : node.tone === "secondary"
+        ? "border-secondary/30 bg-secondary/10 text-secondary"
+        : "border-outline-variant/30 bg-surface-variant text-on-surface-variant";
+
   return (
-    <footer className="flex flex-col items-center justify-between gap-8 border-t border-outline-variant/10 px-10 py-12 md:flex-row md:px-20">
-      <div className="flex flex-col gap-2">
-        <div className="font-headline text-sm font-bold text-primary">
-          {contact.footer.copyright}
-        </div>
-        <div className="font-headline text-[8px] uppercase opacity-30">
-          {contact.footer.build}
-        </div>
-      </div>
-
-      <div className="flex gap-12">
-        {contact.footer.links.map((link) => (
-          <a
-            className="font-headline text-[10px] font-bold uppercase transition-colors hover:text-primary"
-            href="#"
-            key={link}
-          >
-            {link}
-          </a>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-4 bg-surface-container px-4 py-2">
-        <Symbol className="text-sm text-primary">schedule</Symbol>
-        <span className="font-headline text-[10px] font-bold">
-          {contact.footer.timezone}
-        </span>
-        <div className="mx-2 h-3 w-px bg-outline-variant opacity-30" />
-        <Symbol className="text-sm text-green-500">check_circle</Symbol>
-        <span className="font-headline text-[10px] font-bold">
-          {contact.footer.status}
-        </span>
-      </div>
-    </footer>
-  );
-}
-
-function FloatingScrollHint() {
-  return (
-    <div className="vertical-text pointer-events-none fixed bottom-32 right-6 z-50 hidden md:block">
-      <span className="font-headline text-[10px] uppercase text-outline">
-        {contact.scrollHint}
+    <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
+      <span className="font-code text-sm text-on-surface-variant">
+        {node.label}
+      </span>
+      <span className={`border px-2 py-0.5 font-code text-xs ${tone}`}>
+        {node.value}
       </span>
     </div>
+  );
+}
+
+function ContactSection() {
+  return (
+    <SectionShell className="relative overflow-hidden pb-32" id="message">
+      <img
+        alt="Futuristic cybernetic map centered on India"
+        className="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover opacity-10"
+        src={contact.mapImage}
+      />
+      <div className="grid grid-cols-1 gap-gutter lg:grid-cols-[1fr_2fr]">
+        <div className="flex flex-col gap-6">
+          <HudPanel className="relative overflow-hidden p-panel">
+            <div className="absolute left-0 top-0 h-1 w-full bg-primary/20">
+              <div className="h-full w-1/3 bg-primary animate-pulse" />
+            </div>
+            <h3 className="mb-8 flex items-center gap-2 font-code text-xs font-bold text-primary">
+              <Symbol className="text-base">radar</Symbol>
+              HANDSHAKE PROTOCOL
+            </h3>
+            <div className="space-y-4">
+              {contact.nodes.map((node) => (
+                <ConnectionStatus key={node.label} node={node} />
+              ))}
+            </div>
+          </HudPanel>
+
+          <HudPanel className="p-panel">
+            <h3 className="mb-5 flex items-center gap-2 font-code text-xs font-bold text-primary">
+              <Symbol className="text-base">my_location</Symbol>
+              ORIGIN_TRACE
+            </h3>
+            <div className="space-y-3 font-code text-sm text-on-surface-variant">
+              {contact.origin.map((line, index) => (
+                <p className={index === 2 ? "text-primary" : ""} key={line}>
+                  {line}
+                </p>
+              ))}
+            </div>
+          </HudPanel>
+        </div>
+
+        <HudPanel className="glow-cyan p-panel">
+          <div className="mb-8 flex flex-col gap-4 border-b border-primary/30 pb-6 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="flex items-center gap-3 font-headline text-4xl font-bold uppercase md:text-6xl">
+              <Symbol className="text-primary">terminal</Symbol>
+              {contact.title}
+            </h2>
+            <div className="font-code text-sm text-primary/70">
+              SESSION_ID: <span className="text-primary">{contact.session}</span>
+            </div>
+          </div>
+
+          <form className="space-y-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {contact.fields.map((field) => (
+                <label className="space-y-2" key={field.label}>
+                  <span className="block font-code text-xs font-bold text-primary">
+                    {field.label}
+                  </span>
+                  <span className="input-command relative block">
+                    <input
+                      className="w-full border border-outline-variant bg-surface py-3 pl-8 pr-4 font-code text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/50 focus:border-primary focus:ring-1 focus:ring-primary"
+                      placeholder={field.placeholder}
+                      type={field.type}
+                    />
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            <label className="space-y-2">
+              <span className="block font-code text-xs font-bold text-primary">
+                {contact.message.label}
+              </span>
+              <span className="input-command input-command-textarea relative block">
+                <textarea
+                  className="min-h-48 w-full resize-none border border-outline-variant bg-surface py-3 pl-8 pr-4 font-code text-sm text-on-surface outline-none transition-colors placeholder:text-on-surface-variant/50 focus:border-primary focus:ring-1 focus:ring-primary"
+                  placeholder={contact.message.placeholder}
+                />
+              </span>
+            </label>
+
+            <div className="flex flex-col gap-4 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="hidden font-code text-sm text-on-surface-variant animate-pulse sm:block">
+                AWAITING_INPUT...
+              </div>
+              <button
+                className="btn-primary glow-cyan-hover inline-flex min-h-14 items-center justify-center gap-2 px-8 py-4 font-code text-xs font-bold"
+                type="button"
+              >
+                <Symbol className="text-lg">send</Symbol>
+                {contact.submit}
+              </button>
+            </div>
+          </form>
+        </HudPanel>
+      </div>
+    </SectionShell>
   );
 }
 
 export function PortfolioPage() {
   return (
     <>
+      <div className="fixed inset-0 -z-20 bg-background" />
+      <div className="cyber-grid fixed inset-0 -z-10" />
+      <div className="scanlines fixed inset-0 z-[60] opacity-20" />
       <TopNav />
-      <SideNav />
-      <main className="relative min-h-screen overflow-x-hidden pt-14 lg:ml-64">
+      <main className="relative z-10 pb-16">
         <HeroSection />
-        <AboutSection />
+        <ManifestSection />
         <BuildsSection />
         <StackSection />
-        <TimelineSection />
-        <LabSection />
+        <LogsSection />
+        <ProfileSection />
         <ContactSection />
-        <Footer />
       </main>
-      <FloatingScrollHint />
+      <StatusFooter />
+      <MobileCommandRail />
+      <div className="sr-only">{siteMeta.description}</div>
     </>
   );
 }
